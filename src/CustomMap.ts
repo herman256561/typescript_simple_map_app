@@ -1,6 +1,13 @@
 /// <reference types="@types/google.maps" />
-import { User } from "./User";
-import { Company } from "./Company";
+
+export interface Mappable {
+    location: {
+        lat: number;
+        lng: number;
+    };
+    markerContent(): string;
+}
+
 
 export class CustomMap {
     
@@ -19,26 +26,22 @@ export class CustomMap {
     }
 
 
-    async addUserMarker(user: User): Promise<void> {
-        const userPosition = { lat: user.location.lat, lng: user.location.lng };
+    async addMarker(mappable: Mappable): Promise<void> {
+        const mapPosition = { lat: mappable.location.lat, lng: mappable.location.lng };
         const { Map } = await google.maps.importLibrary("maps") as google.maps.MapsLibrary;
         const { AdvancedMarkerElement } = await google.maps.importLibrary("marker") as google.maps.MarkerLibrary;
         const marker = new AdvancedMarkerElement({
             map: this.googleMap,
-            position: userPosition,
-            title: 'user'
+            position: mapPosition,
+        });
+
+        marker.addListener('click', ()=>{
+            const infoWindow = new google.maps.InfoWindow({
+                content: mappable.markerContent()
+            });
+
+            infoWindow.open(this.googleMap, marker);
         });
     };
     
-
-    async addCompanyMarker(company: Company): Promise<void> {
-        const comPosition = { lat: company.location.lat, lng: company.location.lng };
-        const { Map } = await google.maps.importLibrary("maps") as google.maps.MapsLibrary;
-        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker") as google.maps.MarkerLibrary;
-        const marker = new AdvancedMarkerElement({
-            map: this.googleMap,
-            position: comPosition,
-            title: 'company'
-        });
-    };
 }
